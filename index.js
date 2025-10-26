@@ -1,33 +1,47 @@
-// index.js
-const express = require('express');
-const app = express();
-const PORT = 3000;
+/*
+* ========================================
+* FILE: INDEX.JS (MAIN SERVER FILE)
+* MÔ TẢ: Khởi tạo Server Express, kết nối CSDL MongoDB,
+* và định tuyến các API request.
+* ========================================
+*/
 
-// 1. IMPORT Router
+// --- 1. IMPORT CÁC MODULE CẦN THIẾT ---
+const express = require('express');
+const dotenv = require('dotenv');
+const mongoose = require('mongoose');
+const connectDB = require('./db');
+
+// --- 2. IMPORT CÁC ROUTER ---
 const userRoutes = require('./routes/userRoutes');
 
-// 2. MIDDLEWARE: cần để đọc dữ liệu JSON trong body của request (POST, PUT, PATCH)
+// --- 3. CẤU HÌNH BIẾN MÔI TRƯỜNG ---
+dotenv.config();
+
+// --- 4. KHỞI TẠO ỨNG DỤNG EXPRESS ---
+const app = express();
+
+// --- 5. KẾT NỐI CƠ SỞ DỮ LIỆU (MONGODB ATLAS) ---
+connectDB();
+
+// --- 6. CẤU HÌNH MIDDLEWARE ---
 app.use(express.json());
 
-// 3. ĐỊNH TUYẾN GỐC: tất cả route trong userRoutes bắt đầu bằng /api/v1/users
+// --- 7. ĐỊNH TUYẾN (API ROUTES) ---
 app.use('/api/v1/users', userRoutes);
 
-// 4. Route chào mừng (giữ nguyên)
+// Route kiểm tra server + database
 app.get('/', (req, res) => {
-  res.json({ message: "Chào mừng đến với API Dữ liệu Người dùng!" });
-});
-
-// 5. API kiểm tra trạng thái
-app.get('/api/v1/status', (req, res) => {
-  res.json({
-    service: "User Data API",
-    version: "1.0",
-    health: "Good",
-    timestamp: new Date().toISOString()
+  res.status(200).json({
+    message: "Welcome to User Data Backend API (Week 3)",
+    status: "Server is running",
+    database_status: mongoose.connection.readyState === 1 ? "Connected" : "Disconnected"
   });
 });
 
-// 6. Khởi động server
+// --- 8. KHỞI ĐỘNG SERVER ---
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`✅ Server đang chạy tại http://localhost:${PORT}`);
+  console.log(`🚀 Server is running on http://localhost:${PORT}`);
+  console.log("Waiting for MongoDB connection...");
 });
